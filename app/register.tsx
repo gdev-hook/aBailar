@@ -12,7 +12,8 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const { signUp, signInWithGoogle } = useAuth();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -40,6 +41,17 @@ export default function RegisterScreen() {
       Alert.alert('Error de registro', error.message || 'Ocurrió un error al registrar');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+      // La navegación se manejará automáticamente cuando se complete la autenticación
+    } catch (error: any) {
+      Alert.alert('Error de Google', error.message || 'Ocurrió un error al iniciar sesión con Google');
+      setGoogleLoading(false);
     }
   };
 
@@ -93,10 +105,30 @@ export default function RegisterScreen() {
           className="h-12 rounded-lg justify-center items-center mt-2"
           style={{ backgroundColor: colors.tint }}
           onPress={handleRegister}
-          disabled={loading}
+          disabled={loading || googleLoading}
         >
           <ThemedText className="text-white text-base font-semibold">
             {loading ? 'Registrando...' : 'Registrarse'}
+          </ThemedText>
+        </TouchableOpacity>
+
+        <ThemedView className="flex-row items-center my-5">
+          <ThemedView className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+          <ThemedText className="mx-4 text-gray-500 dark:text-gray-400">o</ThemedText>
+          <ThemedView className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+        </ThemedView>
+
+        <TouchableOpacity
+          className="h-12 rounded-lg justify-center items-center flex-row border"
+          style={{ 
+            borderColor: colors.icon,
+            backgroundColor: colorScheme === 'dark' ? '#1f1f1f' : '#fff',
+          }}
+          onPress={handleGoogleLogin}
+          disabled={loading || googleLoading}
+        >
+          <ThemedText className="text-base font-semibold" style={{ color: colors.text }}>
+            {googleLoading ? 'Conectando...' : '🔵 Continuar con Google'}
           </ThemedText>
         </TouchableOpacity>
 
