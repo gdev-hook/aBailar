@@ -14,7 +14,7 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const imageSize = width;
 
@@ -34,7 +34,8 @@ export function PostCard({ post }: PostCardProps) {
             style={{ backgroundColor: colors.tint }}
           >
             <ThemedText className="text-white font-semibold text-sm">
-              {post.userName?.charAt(0).toUpperCase() || post.userEmail.charAt(0).toUpperCase()}
+              {post.userName?.charAt(0).toUpperCase() ||
+                post.userEmail.charAt(0).toUpperCase()}
             </ThemedText>
           </ThemedView>
         )}
