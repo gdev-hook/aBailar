@@ -1,0 +1,72 @@
+{
+  "auth": {
+    "login": {
+      "title": "Iniciar Sesión",
+      "email": "Email",
+      "password": "Contraseña",
+      "loginButton": "Iniciar Sesión",
+      "loggingIn": "Iniciando sesión...",
+      "googleButton": "🔵 Continuar con Google",
+      "connecting": "Conectando...",
+      "noAccount": "¿No tienes cuenta? Regístrate",
+      "or": "o",
+      "error": "Error",
+      "completeFields": "Por favor completa todos los campos",
+      "loginError": "Error de inicio de sesión",
+      "loginErrorDefault": "Ocurrió un error al iniciar sesión",
+      "googleError": "Error de Google",
+      "googleErrorDefault": "Ocurrió un error al iniciar sesión con Google"
+    },
+    "register": {
+      "title": "Crear Cuenta",
+      "email": "Email",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "registerButton": "Registrarse",
+      "registering": "Registrando...",
+      "googleButton": "🔵 Continuar con Google",
+      "connecting": "Conectando...",
+      "hasAccount": "¿Ya tienes cuenta? Inicia sesión",
+      "or": "o",
+      "error": "Error",
+      "completeFields": "Por favor completa todos los campos",
+      "passwordsDontMatch": "Las contraseñas no coinciden",
+      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+      "registerError": "Error de registro",
+      "registerErrorDefault": "Ocurrió un error al registrar",
+      "googleError": "Error de Google",
+      "googleErrorDefault": "Ocurrió un error al iniciar sesión con Google"
+    }
+  },
+  "home": {
+    "noPosts": "No hay publicaciones aún.\n¡Sé el primero en compartir una imagen!",
+    "newPost": "Nueva Publicación",
+    "selectImage": "Seleccionar Imagen",
+    "chooseOption": "Elige una opción",
+    "cancel": "Cancelar",
+    "takePhoto": "Tomar Foto",
+    "chooseFromGallery": "Elegir de Galería",
+    "permissionsNeeded": "Permisos necesarios",
+    "galleryPermission": "Necesitamos acceso a tu galería para subir imágenes.",
+    "cameraPermission": "Necesitamos acceso a tu cámara para tomar fotos.",
+    "touchToSelect": "Toca para seleccionar una imagen",
+    "changeImage": "Cambiar Imagen",
+    "publish": "Publicar",
+    "success": "¡Éxito!",
+    "uploadSuccess": "Tu imagen se ha subido correctamente",
+    "ok": "OK",
+    "error": "Error",
+    "selectImageError": "Por favor selecciona una imagen",
+    "uploadError": "Error al subir la imagen"
+  },
+  "profile": {
+    "logout": "Cerrar Sesión",
+    "logoutConfirm": "¿Estás seguro de que quieres cerrar sesión?",
+    "cancel": "Cancelar",
+    "logoutError": "Error",
+    "logoutErrorDefault": "Error al cerrar sesión"
+  },
+  "common": {
+    "dateFormat": "es-ES"
+  }
+}

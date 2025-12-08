@@ -1,0 +1,72 @@
+{
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "email": "Email",
+      "password": "Password",
+      "loginButton": "Sign In",
+      "loggingIn": "Signing in...",
+      "googleButton": "🔵 Continue with Google",
+      "connecting": "Connecting...",
+      "noAccount": "Don't have an account? Sign up",
+      "or": "or",
+      "error": "Error",
+      "completeFields": "Please complete all fields",
+      "loginError": "Sign in error",
+      "loginErrorDefault": "An error occurred while signing in",
+      "googleError": "Google error",
+      "googleErrorDefault": "An error occurred while signing in with Google"
+    },
+    "register": {
+      "title": "Create Account",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "registerButton": "Sign Up",
+      "registering": "Registering...",
+      "googleButton": "🔵 Continue with Google",
+      "connecting": "Connecting...",
+      "hasAccount": "Already have an account? Sign in",
+      "or": "or",
+      "error": "Error",
+      "completeFields": "Please complete all fields",
+      "passwordsDontMatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "registerError": "Registration error",
+      "registerErrorDefault": "An error occurred while registering",
+      "googleError": "Google error",
+      "googleErrorDefault": "An error occurred while signing in with Google"
+    }
+  },
+  "home": {
+    "noPosts": "No posts yet.\nBe the first to share an image!",
+    "newPost": "New Post",
+    "selectImage": "Select Image",
+    "chooseOption": "Choose an option",
+    "cancel": "Cancel",
+    "takePhoto": "Take Photo",
+    "chooseFromGallery": "Choose from Gallery",
+    "permissionsNeeded": "Permissions needed",
+    "galleryPermission": "We need access to your gallery to upload images.",
+    "cameraPermission": "We need access to your camera to take photos.",
+    "touchToSelect": "Tap to select an image",
+    "changeImage": "Change Image",
+    "publish": "Publish",
+    "success": "Success!",
+    "uploadSuccess": "Your image has been uploaded successfully",
+    "ok": "OK",
+    "error": "Error",
+    "selectImageError": "Please select an image",
+    "uploadError": "Error uploading image"
+  },
+  "profile": {
+    "logout": "Sign Out",
+    "logoutConfirm": "Are you sure you want to sign out?",
+    "cancel": "Cancel",
+    "logoutError": "Error",
+    "logoutErrorDefault": "Error signing out"
+  },
+  "common": {
+    "dateFormat": "en-US"
+  }
+}

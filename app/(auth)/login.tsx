@@ -2,6 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -14,12 +15,13 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signInWithGoogle } = useAuth();
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
+      Alert.alert(t('auth.login.error'), t('auth.login.completeFields'));
       return;
     }
 
@@ -28,7 +30,7 @@ export default function LoginScreen() {
       await signIn(email, password);
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Error de inicio de sesión', error.message || 'Ocurrió un error al iniciar sesión');
+      Alert.alert(t('auth.login.loginError'), error.message || t('auth.login.loginErrorDefault'));
     } finally {
       setLoading(false);
     }
@@ -40,7 +42,7 @@ export default function LoginScreen() {
       await signInWithGoogle();
       // La navegación se manejará automáticamente cuando se complete la autenticación
     } catch (error: any) {
-      Alert.alert('Error de Google', error.message || 'Ocurrió un error al iniciar sesión con Google');
+      Alert.alert(t('auth.login.googleError'), error.message || t('auth.login.googleErrorDefault'));
       setGoogleLoading(false);
     }
   };
@@ -53,12 +55,12 @@ export default function LoginScreen() {
       >
         <ThemedView className="flex-1 justify-center p-5">
         <ThemedText type="title" className="mb-10 text-center">
-          Iniciar Sesión
+          {t('auth.login.title')}
         </ThemedText>
 
         <TextInput
           className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
-          placeholder="Email"
+          placeholder={t('auth.login.email')}
           placeholderTextColor={colors.icon}
           value={email}
           onChangeText={setEmail}
@@ -69,7 +71,7 @@ export default function LoginScreen() {
 
         <TextInput
           className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
-          placeholder="Contraseña"
+          placeholder={t('auth.login.password')}
           placeholderTextColor={colors.icon}
           value={password}
           onChangeText={setPassword}
@@ -85,13 +87,13 @@ export default function LoginScreen() {
           disabled={loading || googleLoading}
         >
           <ThemedText className="text-white text-base font-semibold">
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {loading ? t('auth.login.loggingIn') : t('auth.login.loginButton')}
           </ThemedText>
         </TouchableOpacity>
 
         <ThemedView className="flex-row items-center my-5">
           <ThemedView className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
-          <ThemedText className="mx-4 text-gray-500 dark:text-gray-400">o</ThemedText>
+          <ThemedText className="mx-4 text-gray-500 dark:text-gray-400">{t('auth.login.or')}</ThemedText>
           <ThemedView className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
         </ThemedView>
 
@@ -101,7 +103,7 @@ export default function LoginScreen() {
           disabled={loading || googleLoading}
         >
           <ThemedText className="text-base font-semibold">
-            {googleLoading ? 'Conectando...' : '🔵 Continuar con Google'}
+            {googleLoading ? t('auth.login.connecting') : t('auth.login.googleButton')}
           </ThemedText>
         </TouchableOpacity>
 
@@ -110,7 +112,7 @@ export default function LoginScreen() {
           onPress={() => router.push('/(auth)/register')}
         >
           <ThemedText type="link">
-            ¿No tienes cuenta? Regístrate
+            {t('auth.login.noAccount')}
           </ThemedText>
         </TouchableOpacity>
         </ThemedView>

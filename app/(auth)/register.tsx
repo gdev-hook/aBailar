@@ -2,6 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -15,22 +16,23 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signUp, signInWithGoogle } = useAuth();
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
+      Alert.alert(t('auth.register.error'), t('auth.register.completeFields'));
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
+      Alert.alert(t('auth.register.error'), t('auth.register.passwordsDontMatch'));
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+      Alert.alert(t('auth.register.error'), t('auth.register.passwordTooShort'));
       return;
     }
 
@@ -39,7 +41,7 @@ export default function RegisterScreen() {
       await signUp(email, password);
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Error de registro', error.message || 'Ocurrió un error al registrar');
+      Alert.alert(t('auth.register.registerError'), error.message || t('auth.register.registerErrorDefault'));
     } finally {
       setLoading(false);
     }
@@ -51,7 +53,7 @@ export default function RegisterScreen() {
       await signInWithGoogle();
       // La navegación se manejará automáticamente cuando se complete la autenticación
     } catch (error: any) {
-      Alert.alert('Error de Google', error.message || 'Ocurrió un error al iniciar sesión con Google');
+      Alert.alert(t('auth.register.googleError'), error.message || t('auth.register.googleErrorDefault'));
       setGoogleLoading(false);
     }
   };
@@ -64,12 +66,12 @@ export default function RegisterScreen() {
       >
         <ThemedView className="flex-1 justify-center p-5">
         <ThemedText type="title" className="mb-10 text-center">
-          Crear Cuenta
+          {t('auth.register.title')}
         </ThemedText>
 
         <TextInput
           className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
-          placeholder="Email"
+          placeholder={t('auth.register.email')}
           placeholderTextColor={colors.icon}
           value={email}
           onChangeText={setEmail}
@@ -80,7 +82,7 @@ export default function RegisterScreen() {
 
         <TextInput
           className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
-          placeholder="Contraseña"
+          placeholder={t('auth.register.password')}
           placeholderTextColor={colors.icon}
           value={password}
           onChangeText={setPassword}
@@ -91,7 +93,7 @@ export default function RegisterScreen() {
 
         <TextInput
           className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
-          placeholder="Confirmar Contraseña"
+          placeholder={t('auth.register.confirmPassword')}
           placeholderTextColor={colors.icon}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
@@ -107,13 +109,13 @@ export default function RegisterScreen() {
           disabled={loading || googleLoading}
         >
           <ThemedText className="text-white text-base font-semibold">
-            {loading ? 'Registrando...' : 'Registrarse'}
+            {loading ? t('auth.register.registering') : t('auth.register.registerButton')}
           </ThemedText>
         </TouchableOpacity>
 
         <ThemedView className="flex-row items-center my-5">
           <ThemedView className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
-          <ThemedText className="mx-4 text-gray-500 dark:text-gray-400">o</ThemedText>
+          <ThemedText className="mx-4 text-gray-500 dark:text-gray-400">{t('auth.register.or')}</ThemedText>
           <ThemedView className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
         </ThemedView>
 
@@ -123,7 +125,7 @@ export default function RegisterScreen() {
           disabled={loading || googleLoading}
         >
           <ThemedText className="text-base font-semibold">
-            {googleLoading ? 'Conectando...' : '🔵 Continuar con Google'}
+            {googleLoading ? t('auth.register.connecting') : t('auth.register.googleButton')}
           </ThemedText>
         </TouchableOpacity>
 
@@ -132,7 +134,7 @@ export default function RegisterScreen() {
           onPress={() => router.push('/(auth)/login')}
         >
           <ThemedText type="link">
-            ¿Ya tienes cuenta? Inicia sesión
+            {t('auth.register.hasAccount')}
           </ThemedText>
         </TouchableOpacity>
         </ThemedView>

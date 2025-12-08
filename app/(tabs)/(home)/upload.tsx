@@ -3,6 +3,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { createPost, uploadImage } from '@/services/posts';
 import { Image } from 'expo-image';
@@ -24,6 +25,7 @@ export default function UploadScreen() {
   const { user } = useAuth();
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -32,8 +34,8 @@ export default function UploadScreen() {
     
     if (status !== 'granted') {
       Alert.alert(
-        'Permisos necesarios',
-        'Necesitamos acceso a tu galería para subir imágenes.'
+        t('home.permissionsNeeded'),
+        t('home.galleryPermission')
       );
       return;
     }
@@ -55,8 +57,8 @@ export default function UploadScreen() {
     
     if (status !== 'granted') {
       Alert.alert(
-        'Permisos necesarios',
-        'Necesitamos acceso a tu cámara para tomar fotos.'
+        t('home.permissionsNeeded'),
+        t('home.cameraPermission')
       );
       return;
     }
@@ -74,7 +76,7 @@ export default function UploadScreen() {
 
   const handleUpload = async () => {
     if (!image || !user) {
-      Alert.alert('Error', 'Por favor selecciona una imagen');
+      Alert.alert(t('home.error'), t('home.selectImageError'));
       return;
     }
 
@@ -89,16 +91,16 @@ export default function UploadScreen() {
         user.photoURL || undefined
       );
       
-      Alert.alert('¡Éxito!', 'Tu imagen se ha subido correctamente', [
+      Alert.alert(t('home.success'), t('home.uploadSuccess'), [
         {
-          text: 'OK',
+          text: t('home.ok'),
           onPress: () => {
             router.back();
           },
         },
       ]);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Error al subir la imagen');
+      Alert.alert(t('home.error'), error.message || t('home.uploadError'));
     } finally {
       setUploading(false);
     }
@@ -106,12 +108,12 @@ export default function UploadScreen() {
 
   const showImagePickerOptions = () => {
     Alert.alert(
-      'Seleccionar Imagen',
-      'Elige una opción',
+      t('home.selectImage'),
+      t('home.chooseOption'),
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Tomar Foto', onPress: takePhoto },
-        { text: 'Elegir de Galería', onPress: pickImage },
+        { text: t('home.cancel'), style: 'cancel' },
+        { text: t('home.takePhoto'), onPress: takePhoto },
+        { text: t('home.chooseFromGallery'), onPress: pickImage },
       ]
     );
   };
@@ -129,7 +131,7 @@ export default function UploadScreen() {
             <IconSymbol name="xmark" size={24} color={colors.text} />
           </TouchableOpacity>
           <ThemedText type="title" className="text-xl font-bold">
-            Nueva Publicación
+            {t('home.newPost')}
           </ThemedText>
           <View className="w-6" />
         </ThemedView>
@@ -148,7 +150,7 @@ export default function UploadScreen() {
                   className="py-3 px-4 rounded-lg mb-4 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
                 >
                   <ThemedText className="text-center font-semibold">
-                    Cambiar Imagen
+                    {t('home.changeImage')}
                   </ThemedText>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -163,7 +165,7 @@ export default function UploadScreen() {
                     <ActivityIndicator color="white" />
                   ) : (
                     <ThemedText className="text-white text-center font-semibold text-base">
-                      Publicar
+                      {t('home.publish')}
                     </ThemedText>
                   )}
                 </TouchableOpacity>
@@ -176,7 +178,7 @@ export default function UploadScreen() {
                 >
                   <IconSymbol name="photo" size={64} color={colors.icon} />
                   <ThemedText className="mt-4 text-center text-gray-500 dark:text-gray-400">
-                    Toca para seleccionar una imagen
+                    {t('home.touchToSelect')}
                   </ThemedText>
                 </TouchableOpacity>
               </ThemedView>

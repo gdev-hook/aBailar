@@ -3,6 +3,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Image } from 'expo-image';
 import { Alert, TouchableOpacity } from 'react-native';
@@ -10,23 +11,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
   const handleLogout = () => {
     Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás seguro de que quieres cerrar sesión?',
+      t('profile.logout'),
+      t('profile.logoutConfirm'),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('profile.cancel'), style: 'cancel' },
         {
-          text: 'Cerrar Sesión',
+          text: t('profile.logout'),
           style: 'destructive',
           onPress: async () => {
             try {
               await logout();
             } catch (error: any) {
-              Alert.alert('Error', error.message || 'Error al cerrar sesión');
+              Alert.alert(t('profile.logoutError'), error.message || t('profile.logoutErrorDefault'));
             }
           },
         },
@@ -73,7 +75,7 @@ export default function ProfileScreen() {
         >
           <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.text} />
           <ThemedText className="ml-4 text-base">
-            Cerrar Sesión
+            {t('profile.logout')}
           </ThemedText>
         </TouchableOpacity>
       </ThemedView>

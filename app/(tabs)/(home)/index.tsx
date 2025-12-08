@@ -3,6 +3,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Post, subscribeToPosts } from '@/services/posts';
 import { router } from 'expo-router';
@@ -13,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function FeedScreen() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -46,8 +48,7 @@ export default function FeedScreen() {
           <ThemedView className="flex-1 items-center justify-center py-20 px-4">
             <IconSymbol name="photo" size={64} color={colors.icon} />
             <ThemedText className="text-center mt-4 text-gray-500 dark:text-gray-400">
-              No hay publicaciones aún.{'\n'}
-              ¡Sé el primero en compartir una imagen!
+              {t('home.noPosts')}
             </ThemedText>
           </ThemedView>
         ) : (

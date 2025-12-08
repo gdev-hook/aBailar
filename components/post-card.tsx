@@ -1,4 +1,5 @@
 import { Colors } from '@/constants/theme';
+import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Post } from '@/services/posts';
 import { Image } from 'expo-image';
@@ -13,6 +14,7 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { t, locale } = useTranslation();
   const { width } = useWindowDimensions();
   const imageSize = width;
 
@@ -57,7 +59,7 @@ export function PostCard({ post }: PostCardProps) {
       {/* Footer opcional (puedes agregar likes, comentarios, etc.) */}
       <ThemedView className="px-4 py-3">
         <ThemedText className="text-sm text-gray-500 dark:text-gray-400">
-          {new Date(post.createdAt).toLocaleDateString('es-ES', {
+          {new Date(post.createdAt).toLocaleDateString(t('common.dateFormat'), {
             day: 'numeric',
             month: 'short',
             hour: '2-digit',

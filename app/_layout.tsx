@@ -9,6 +9,7 @@ import '../global.css';
 
 import { ThemedView } from '@/components/themed-view';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { I18nProvider } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
@@ -55,9 +56,11 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </I18nProvider>
     </SafeAreaProvider>
   );
 }
