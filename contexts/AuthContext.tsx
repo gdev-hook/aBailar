@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
 import {
   User,
   signInWithEmailAndPassword,
@@ -40,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
       setUser(user);
       setLoading(false);
     });
@@ -57,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .then(() => {
           // La navegación se manejará automáticamente por el onAuthStateChanged
         })
-        .catch((error) => {
+        .catch(error => {
           console.error('Error al iniciar sesión con Google:', error);
         });
     } else if (response?.type === 'error') {
@@ -109,4 +115,3 @@ export function useAuth() {
   }
   return context;
 }
-

@@ -33,7 +33,7 @@ function getDeviceLocale(): string {
 function getNestedTranslation(obj: any, path: string): string {
   const keys = path.split('.');
   let current: any = obj;
-  
+
   for (const key of keys) {
     if (current && typeof current === 'object' && key in current) {
       current = current[key];
@@ -41,7 +41,7 @@ function getNestedTranslation(obj: any, path: string): string {
       return path; // Retornar la clave si no se encuentra la traducción
     }
   }
-  
+
   return typeof current === 'string' ? current : path;
 }
 

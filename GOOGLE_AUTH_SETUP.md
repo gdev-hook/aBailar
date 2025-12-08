@@ -13,6 +13,7 @@ Esta guía te ayudará a configurar la autenticación con Google en tu aplicaci�
 ## 2. Crear Credenciales OAuth 2.0
 
 ### Para Web:
+
 1. Ve a "APIs & Services" > "Credentials"
 2. Haz clic en "Create Credentials" > "OAuth client ID"
 3. Selecciona "Web application"
@@ -22,12 +23,14 @@ Esta guía te ayudará a configurar la autenticación con Google en tu aplicaci�
 5. Copia el **Client ID** (este es tu `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`)
 
 ### Para iOS:
+
 1. Crea otra credencial OAuth 2.0
 2. Selecciona "iOS"
 3. Ingresa tu **Bundle ID**: `com.gdevhook.abailar11GJzS`
 4. Copia el **Client ID** (este es tu `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`)
 
 ### Para Android:
+
 1. Crea otra credencial OAuth 2.0
 2. Selecciona "Android"
 3. Ingresa tu **Package name**: `com.gdevhook.abailar11GJzS`
@@ -114,6 +117,7 @@ Este es el error más común. Sigue estos pasos:
 #### Paso 2: Agregar Usuarios de Prueba (Modo Testing)
 
 Si tu app está en modo **Testing**:
+
 1. Ve a **OAuth consent screen**
 2. En la sección **Test users**, haz clic en **+ ADD USERS**
 3. Agrega el email de la cuenta de Google que quieres usar para probar
@@ -123,6 +127,7 @@ Si tu app está en modo **Testing**:
 #### Paso 3: Cambiar a Modo Producción (Opcional)
 
 Si quieres que cualquier usuario pueda usar la app:
+
 1. Ve a **OAuth consent screen**
 2. Haz clic en **PUBLISH APP**
 3. Completa el proceso de verificación de Google (puede tardar varios días)
@@ -140,16 +145,19 @@ Si quieres que cualquier usuario pueda usar la app:
 4. Guarda los cambios
 
 ### Error: "The OAuth client was not found"
+
 - Verifica que los Client IDs en `.env` sean correctos
 - Asegúrate de que las credenciales estén habilitadas en Google Cloud Console
 
 ### Error: "redirect_uri_mismatch"
+
 - Verifica que las URLs de redirección en Google Cloud Console incluyan:
   - `https://auth.expo.io/@TU_USERNAME/TU_SLUG`
   - `exp://localhost:8081` (para desarrollo)
 - El formato debe ser exacto, sin espacios adicionales
 
 ### La autenticación funciona en web pero no en móvil
+
 - Asegúrate de tener los Client IDs específicos para iOS y Android
 - Verifica que el Bundle ID y Package name coincidan con los de Google Cloud Console
 - Para desarrollo, puedes usar solo el Web Client ID en todas las plataformas
@@ -160,4 +168,3 @@ Si quieres que cualquier usuario pueda usar la app:
 - Si cambias de cuenta de Google, asegúrate de agregarla como usuario de prueba
 - Los cambios en la pantalla de consentimiento pueden tardar unos minutos en aplicarse
 - Para producción, necesitarás publicar la app y completar la verificación de Google
-

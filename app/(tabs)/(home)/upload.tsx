@@ -31,12 +31,9 @@ export default function UploadScreen() {
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (status !== 'granted') {
-      Alert.alert(
-        t('home.permissionsNeeded'),
-        t('home.galleryPermission')
-      );
+      Alert.alert(t('home.permissionsNeeded'), t('home.galleryPermission'));
       return;
     }
 
@@ -54,12 +51,9 @@ export default function UploadScreen() {
 
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    
+
     if (status !== 'granted') {
-      Alert.alert(
-        t('home.permissionsNeeded'),
-        t('home.cameraPermission')
-      );
+      Alert.alert(t('home.permissionsNeeded'), t('home.cameraPermission'));
       return;
     }
 
@@ -90,7 +84,7 @@ export default function UploadScreen() {
         user.displayName || undefined,
         user.photoURL || undefined
       );
-      
+
       Alert.alert(t('home.success'), t('home.uploadSuccess'), [
         {
           text: t('home.ok'),
@@ -107,15 +101,11 @@ export default function UploadScreen() {
   };
 
   const showImagePickerOptions = () => {
-    Alert.alert(
-      t('home.selectImage'),
-      t('home.chooseOption'),
-      [
-        { text: t('home.cancel'), style: 'cancel' },
-        { text: t('home.takePhoto'), onPress: takePhoto },
-        { text: t('home.chooseFromGallery'), onPress: pickImage },
-      ]
-    );
+    Alert.alert(t('home.selectImage'), t('home.chooseOption'), [
+      { text: t('home.cancel'), style: 'cancel' },
+      { text: t('home.takePhoto'), onPress: takePhoto },
+      { text: t('home.chooseFromGallery'), onPress: pickImage },
+    ]);
   };
 
   return (
@@ -125,66 +115,69 @@ export default function UploadScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ThemedView className="flex-1">
-        {/* Header */}
-        <ThemedView className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-          <TouchableOpacity onPress={() => router.back()}>
-            <IconSymbol name="xmark" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <ThemedText type="title" className="text-xl font-bold">
-            {t('home.newPost')}
-          </ThemedText>
-          <View className="w-6" />
-        </ThemedView>
-
-        <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
-          <ThemedView className="flex-1 p-4">
-            {image ? (
-              <ThemedView className="flex-1">
-                <Image
-                  source={{ uri: image }}
-                  className="w-full aspect-square rounded-lg mb-4"
-                  contentFit="cover"
-                />
-                <TouchableOpacity
-                  onPress={showImagePickerOptions}
-                  className="py-3 px-4 rounded-lg mb-4 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-                >
-                  <ThemedText className="text-center font-semibold">
-                    {t('home.changeImage')}
-                  </ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleUpload}
-                  disabled={uploading}
-                  className={`py-3 px-4 rounded-lg ${uploading ? 'opacity-60' : ''}`}
-                  style={{
-                    backgroundColor: uploading ? colors.icon : colors.tint,
-                  }}
-                >
-                  {uploading ? (
-                    <ActivityIndicator color="white" />
-                  ) : (
-                    <ThemedText className="text-white text-center font-semibold text-base">
-                      {t('home.publish')}
-                    </ThemedText>
-                  )}
-                </TouchableOpacity>
-              </ThemedView>
-            ) : (
-              <ThemedView className="flex-1 items-center justify-center">
-                <TouchableOpacity
-                  onPress={showImagePickerOptions}
-                  className="items-center justify-center w-full aspect-square rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
-                >
-                  <IconSymbol name="photo" size={64} color={colors.icon} />
-                  <ThemedText className="mt-4 text-center text-gray-500 dark:text-gray-400">
-                    {t('home.touchToSelect')}
-                  </ThemedText>
-                </TouchableOpacity>
-              </ThemedView>
-            )}
+          {/* Header */}
+          <ThemedView className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+            <TouchableOpacity onPress={() => router.back()}>
+              <IconSymbol name="xmark" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <ThemedText type="title" className="text-xl font-bold">
+              {t('home.newPost')}
+            </ThemedText>
+            <View className="w-6" />
           </ThemedView>
-        </ScrollView>
+
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ flexGrow: 1 }}
+          >
+            <ThemedView className="flex-1 p-4">
+              {image ? (
+                <ThemedView className="flex-1">
+                  <Image
+                    source={{ uri: image }}
+                    className="w-full aspect-square rounded-lg mb-4"
+                    contentFit="cover"
+                  />
+                  <TouchableOpacity
+                    onPress={showImagePickerOptions}
+                    className="py-3 px-4 rounded-lg mb-4 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                  >
+                    <ThemedText className="text-center font-semibold">
+                      {t('home.changeImage')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleUpload}
+                    disabled={uploading}
+                    className={`py-3 px-4 rounded-lg ${uploading ? 'opacity-60' : ''}`}
+                    style={{
+                      backgroundColor: uploading ? colors.icon : colors.tint,
+                    }}
+                  >
+                    {uploading ? (
+                      <ActivityIndicator color="white" />
+                    ) : (
+                      <ThemedText className="text-white text-center font-semibold text-base">
+                        {t('home.publish')}
+                      </ThemedText>
+                    )}
+                  </TouchableOpacity>
+                </ThemedView>
+              ) : (
+                <ThemedView className="flex-1 items-center justify-center">
+                  <TouchableOpacity
+                    onPress={showImagePickerOptions}
+                    className="items-center justify-center w-full aspect-square rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
+                  >
+                    <IconSymbol name="photo" size={64} color={colors.icon} />
+                    <ThemedText className="mt-4 text-center text-gray-500 dark:text-gray-400">
+                      {t('home.touchToSelect')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </ThemedView>
+              )}
+            </ThemedView>
+          </ScrollView>
         </ThemedView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -63,7 +63,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 function MyComponent() {
   const { user, signIn, signUp, logout } = useAuth();
-  
+
   // user contiene el usuario actual o null
   // signIn, signUp, logout son funciones para manejar la autenticación
 }
@@ -72,13 +72,14 @@ function MyComponent() {
 ## Solución de problemas
 
 ### Error: "Firebase: Error (auth/invalid-api-key)"
+
 - Verifica que las variables de entorno estén correctamente configuradas
 - Asegúrate de que el archivo `.env` esté en la raíz del proyecto
 - Reinicia el servidor de desarrollo después de crear/modificar `.env`
 
 ### La autenticación no persiste
+
 - Esto es normal en Expo Go. Para persistencia completa, crea un development build:
   ```bash
   npm run development-builds
   ```
-

@@ -8,12 +8,12 @@ export default function HomeLayout() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen 
-        name="upload" 
-        options={{ 
+      <Stack.Screen
+        name="upload"
+        options={{
           headerShown: false,
-          presentation: 'modal' 
-        }} 
+          presentation: 'modal',
+        }}
       />
     </Stack>
   );
