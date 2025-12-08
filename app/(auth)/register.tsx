@@ -6,28 +6,40 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signUp, signInWithGoogle } = useAuth();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  const handleLogin = async () => {
-    if (!email || !password) {
+  const handleRegister = async () => {
+    if (!email || !password || !confirmPassword) {
       Alert.alert('Error', 'Por favor completa todos los campos');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     setLoading(true);
     try {
-      await signIn(email, password);
+      await signUp(email, password);
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Error de inicio de sesión', error.message || 'Ocurrió un error al iniciar sesión');
+      Alert.alert('Error de registro', error.message || 'Ocurrió un error al registrar');
     } finally {
       setLoading(false);
     }
@@ -45,18 +57,18 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1"
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ThemedView className="flex-1 justify-center p-5">
+    <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ThemedView className="flex-1 justify-center p-5">
         <ThemedText type="title" className="mb-10 text-center">
-          Iniciar Sesión
+          Crear Cuenta
         </ThemedText>
 
         <TextInput
-          className="h-12 border rounded-lg px-4 mb-4 text-base"
-          style={{ color: colors.text, borderColor: colors.icon }}
+          className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
           placeholder="Email"
           placeholderTextColor={colors.icon}
           value={email}
@@ -67,25 +79,35 @@ export default function LoginScreen() {
         />
 
         <TextInput
-          className="h-12 border rounded-lg px-4 mb-4 text-base"
-          style={{ color: colors.text, borderColor: colors.icon }}
+          className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
           placeholder="Contraseña"
           placeholderTextColor={colors.icon}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
           autoCapitalize="none"
-          autoComplete="password"
+          autoComplete="password-new"
+        />
+
+        <TextInput
+          className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
+          placeholder="Confirmar Contraseña"
+          placeholderTextColor={colors.icon}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          autoCapitalize="none"
+          autoComplete="password-new"
         />
 
         <TouchableOpacity
           className="h-12 rounded-lg justify-center items-center mt-2"
           style={{ backgroundColor: colors.tint }}
-          onPress={handleLogin}
+          onPress={handleRegister}
           disabled={loading || googleLoading}
         >
           <ThemedText className="text-white text-base font-semibold">
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {loading ? 'Registrando...' : 'Registrarse'}
           </ThemedText>
         </TouchableOpacity>
 
@@ -96,29 +118,25 @@ export default function LoginScreen() {
         </ThemedView>
 
         <TouchableOpacity
-          className="h-12 rounded-lg justify-center items-center flex-row border"
-          style={{ 
-            borderColor: colors.icon,
-            backgroundColor: colorScheme === 'dark' ? '#1f1f1f' : '#fff',
-          }}
+          className="h-12 rounded-lg justify-center items-center flex-row border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
           onPress={handleGoogleLogin}
           disabled={loading || googleLoading}
         >
-          <ThemedText className="text-base font-semibold" style={{ color: colors.text }}>
+          <ThemedText className="text-base font-semibold">
             {googleLoading ? 'Conectando...' : '🔵 Continuar con Google'}
           </ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity
           className="mt-5 items-center"
-          onPress={() => router.push('/register')}
+          onPress={() => router.push('/(auth)/login')}
         >
           <ThemedText type="link">
-            ¿No tienes cuenta? Regístrate
+            ¿Ya tienes cuenta? Inicia sesión
           </ThemedText>
         </TouchableOpacity>
-      </ThemedView>
-    </KeyboardAvoidingView>
+        </ThemedView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
-

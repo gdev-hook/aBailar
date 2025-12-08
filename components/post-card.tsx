@@ -1,0 +1,70 @@
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Post } from '@/services/posts';
+import { Image } from 'expo-image';
+import { useWindowDimensions } from 'react-native';
+import { ThemedText } from './themed-text';
+import { ThemedView } from './themed-view';
+
+interface PostCardProps {
+  post: Post;
+}
+
+export function PostCard({ post }: PostCardProps) {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const { width } = useWindowDimensions();
+  const imageSize = width;
+
+  return (
+    <ThemedView className="mb-4 bg-white dark:bg-black">
+      {/* Header */}
+      <ThemedView className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+        {post.userPhotoURL ? (
+          <Image
+            source={{ uri: post.userPhotoURL }}
+            className="w-10 h-10 rounded-full mr-3"
+            contentFit="cover"
+          />
+        ) : (
+          <ThemedView
+            className="w-10 h-10 rounded-full mr-3 items-center justify-center"
+            style={{ backgroundColor: colors.tint }}
+          >
+            <ThemedText className="text-white font-semibold text-sm">
+              {post.userName?.charAt(0).toUpperCase() || post.userEmail.charAt(0).toUpperCase()}
+            </ThemedText>
+          </ThemedView>
+        )}
+        <ThemedView className="flex-1">
+          <ThemedText className="font-semibold text-base">
+            {post.userName || post.userEmail.split('@')[0]}
+          </ThemedText>
+        </ThemedView>
+      </ThemedView>
+
+      {/* Imagen */}
+      <Image
+        source={{ uri: post.imageUrl }}
+        className="w-full aspect-square"
+        style={{ width: imageSize, height: imageSize }}
+        contentFit="cover"
+        transition={200}
+        cachePolicy="memory-disk"
+        placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
+      />
+
+      {/* Footer opcional (puedes agregar likes, comentarios, etc.) */}
+      <ThemedView className="px-4 py-3">
+        <ThemedText className="text-sm text-gray-500 dark:text-gray-400">
+          {new Date(post.createdAt).toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </ThemedText>
+      </ThemedView>
+    </ThemedView>
+  );
+}

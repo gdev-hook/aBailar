@@ -1,7 +1,10 @@
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import { FirebaseApp, getApps, initializeApp } from 'firebase/app';
 // @ts-ignore
-import { Auth, getReactNativePersistence, initializeAuth } from 'firebase/auth';
+import { Auth, getAuth, getReactNativePersistence, initializeAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+import { Platform } from 'react-native';
 
 const FIREBASE_API_KEY = process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
 
@@ -19,19 +22,32 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Inicializar Firebase solo si no está ya inicializado
 let app: FirebaseApp;
+
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
 } else {
   app = getApps()[0];
 }
 
-// 🔑 Inicialización con Persistencia:
-export const auth: Auth = initializeAuth(app, {
-  // Usa getReactNativePersistence para indicar cómo guardar la sesión
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-});
+export let auth: Auth;
+const isWeb = Platform.OS === 'web';
+
+if (!isWeb) {
+  try {
+      auth = initializeAuth(app, {
+        persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+      });
+  } catch (e) {
+      // En caso de que ya esté inicializada (re-render)
+      auth = getAuth(app);
+  }
+} else {
+  auth = getAuth(app);
+}
+
+export const storage = getStorage(app);
+export const db = getFirestore(app);
 
 export default app;
 
