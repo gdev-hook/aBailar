@@ -3,6 +3,7 @@ import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Post } from '@/services/posts';
 import { Image } from 'expo-image';
+import { useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
@@ -17,6 +18,7 @@ export function PostCard({ post }: PostCardProps) {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const imageSize = width;
+  const [imageHeight, setImageHeight] = useState<number | null>(null);
 
   return (
     <ThemedView className="mb-4 bg-white dark:bg-black">
@@ -43,22 +45,45 @@ export function PostCard({ post }: PostCardProps) {
           <ThemedText className="font-semibold text-base">
             {post.userName || post.userEmail.split('@')[0]}
           </ThemedText>
+          {post.eventDate && (
+            <ThemedText className="text-xs text-gray-500 dark:text-gray-400">
+              {new Date(post.eventDate).toLocaleDateString(
+                t('common.dateFormat'),
+                {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                }
+              )}
+            </ThemedText>
+          )}
         </ThemedView>
       </ThemedView>
 
-      {/* Imagen */}
+      {/* Image */}
       <Image
         source={{ uri: post.imageUrl }}
-        className="w-full aspect-square"
-        style={{ width: imageSize, height: imageSize }}
-        contentFit="cover"
+        style={{
+          width: imageSize,
+          height: imageHeight || imageSize,
+          alignSelf: 'stretch',
+        }}
+        contentFit="contain"
         transition={200}
         cachePolicy="memory-disk"
         placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
+        onLoad={e => {
+          const { width: imgWidth, height: imgHeight } = e.source;
+          if (imgWidth && imgHeight) {
+            const aspectRatio = imgHeight / imgWidth;
+            const calculatedHeight = imageSize * aspectRatio;
+            setImageHeight(calculatedHeight);
+          }
+        }}
       />
 
-      {/* Footer opcional (puedes agregar likes, comentarios, etc.) */}
-      <ThemedView className="px-4 py-3">
+      {/* Footer */}
+      {/* <ThemedView className="px-4 py-3">
         <ThemedText className="text-sm text-gray-500 dark:text-gray-400">
           {new Date(post.createdAt).toLocaleDateString(t('common.dateFormat'), {
             day: 'numeric',
@@ -67,7 +92,7 @@ export function PostCard({ post }: PostCardProps) {
             minute: '2-digit',
           })}
         </ThemedText>
-      </ThemedView>
+      </ThemedView> */}
     </ThemedView>
   );
 }

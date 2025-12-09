@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { createPost, uploadImage } from '@/services/posts';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -25,6 +26,8 @@ export default function UploadScreen() {
   const { user } = useAuth();
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [eventDate, setEventDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -40,7 +43,6 @@ export default function UploadScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1],
       quality: 0.8,
     });
 
@@ -59,7 +61,6 @@ export default function UploadScreen() {
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [1, 1],
       quality: 0.8,
     });
 
@@ -74,6 +75,11 @@ export default function UploadScreen() {
       return;
     }
 
+    if (!eventDate) {
+      Alert.alert(t('home.error'), t('home.selectEventDateError'));
+      return;
+    }
+
     setUploading(true);
     try {
       const imageUrl = await uploadImage(image, user.uid);
@@ -82,7 +88,8 @@ export default function UploadScreen() {
         user.uid,
         user.email || '',
         user.displayName || undefined,
-        user.photoURL || undefined
+        user.photoURL || undefined,
+        eventDate || undefined
       );
 
       Alert.alert(t('home.success'), t('home.uploadSuccess'), [
@@ -97,6 +104,28 @@ export default function UploadScreen() {
       Alert.alert(t('home.error'), error.message || t('home.uploadError'));
     } finally {
       setUploading(false);
+    }
+  };
+
+  const formatDate = (date: Date | null): string => {
+    if (!date) return '';
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const getMinimumDate = (): Date => {
+    const tomorrow = new Date();
+    tomorrow.setHours(tomorrow.getHours() + 24);
+    return tomorrow;
+  };
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (event.type !== 'dismissed' && selectedDate) {
+      setEventDate(selectedDate);
     }
   };
 
@@ -135,8 +164,9 @@ export default function UploadScreen() {
                 <ThemedView className="flex-1">
                   <Image
                     source={{ uri: image }}
-                    className="w-full aspect-square rounded-lg mb-4"
-                    contentFit="cover"
+                    className="w-full rounded-lg mb-4"
+                    style={{ maxHeight: 400 }}
+                    contentFit="contain"
                   />
                   <TouchableOpacity
                     onPress={showImagePickerOptions}
@@ -147,11 +177,48 @@ export default function UploadScreen() {
                     </ThemedText>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    onPress={() => setShowDatePicker(true)}
+                    className="py-3 px-4 rounded-lg mb-4 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                  >
+                    <ThemedText className="text-center font-semibold">
+                      {eventDate
+                        ? formatDate(eventDate)
+                        : t('home.selectEventDate')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={eventDate || getMinimumDate()}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={onDateChange}
+                      minimumDate={getMinimumDate()}
+                    />
+                  )}
+                  {Platform.OS === 'ios' && showDatePicker && (
+                    <View className="flex-row justify-end mt-2">
+                      <TouchableOpacity
+                        onPress={() => setShowDatePicker(false)}
+                        className="px-4 py-2"
+                      >
+                        <ThemedText
+                          className="font-semibold"
+                          style={{ color: colors.tint }}
+                        >
+                          {t('home.ok')}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  <TouchableOpacity
                     onPress={handleUpload}
-                    disabled={uploading}
-                    className={`py-3 px-4 rounded-lg ${uploading ? 'opacity-60' : ''}`}
+                    disabled={uploading || !eventDate}
+                    className={`py-3 px-4 rounded-lg ${
+                      uploading || !eventDate ? 'opacity-60' : ''
+                    }`}
                     style={{
-                      backgroundColor: uploading ? colors.icon : colors.tint,
+                      backgroundColor:
+                        uploading || !eventDate ? colors.icon : colors.tint,
                     }}
                   >
                     {uploading ? (
@@ -167,7 +234,8 @@ export default function UploadScreen() {
                 <ThemedView className="flex-1 items-center justify-center">
                   <TouchableOpacity
                     onPress={showImagePickerOptions}
-                    className="items-center justify-center w-full aspect-square rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
+                    className="items-center justify-center w-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
+                    style={{ minHeight: 200, paddingVertical: 40 }}
                   >
                     <IconSymbol name="photo" size={64} color={colors.icon} />
                     <ThemedText className="mt-4 text-center text-gray-500 dark:text-gray-400">

@@ -57,7 +57,9 @@
     "ok": "OK",
     "error": "Error",
     "selectImageError": "Please select an image",
-    "uploadError": "Error uploading image"
+    "uploadError": "Error uploading image",
+    "selectEventDate": "Select event date",
+    "selectEventDateError": "Please select an event date"
   },
   "profile": {
     "logout": "Sign Out",

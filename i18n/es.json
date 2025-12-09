@@ -57,7 +57,9 @@
     "ok": "OK",
     "error": "Error",
     "selectImageError": "Por favor selecciona una imagen",
-    "uploadError": "Error al subir la imagen"
+    "uploadError": "Error al subir la imagen",
+    "selectEventDate": "Seleccionar fecha del evento",
+    "selectEventDateError": "Por favor selecciona una fecha del evento"
   },
   "profile": {
     "logout": "Cerrar Sesión",

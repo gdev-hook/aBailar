@@ -1,3 +1,4 @@
+import Foundation from '@expo/vector-icons/Foundation';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
@@ -20,18 +21,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(home)"
         options={{
-          title: 'Home',
+          tabBarShowLabel: false,
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <Foundation name="home" size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="(profile)"
         options={{
-          title: 'Profile',
+          tabBarShowLabel: false,
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <IconSymbol size={24} name="person.fill" color={color} />
           ),
         }}
       />
