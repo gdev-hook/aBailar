@@ -1,29 +1,31 @@
+import { auth } from '@/config/firebase';
+import { createUserDocument, getUserPermissions } from '@/services/users';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import {
+  GoogleAuthProvider,
+  User,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  signInWithCredential,
+  signInWithEmailAndPassword,
+  signOut,
+} from 'firebase/auth';
 import React, {
+  ReactNode,
   createContext,
   useContext,
   useEffect,
   useState,
-  ReactNode,
 } from 'react';
-import {
-  User,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  GoogleAuthProvider,
-  signInWithCredential,
-} from 'firebase/auth';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
-import { auth } from '@/config/firebase';
 
 // Completar la sesión de autenticación web
 WebBrowser.maybeCompleteAuthSession();
 
 interface AuthContextType {
   user: User | null;
+  permissions: string[];
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
@@ -36,6 +38,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Configurar Google OAuth
@@ -46,8 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
+    const unsubscribe = onAuthStateChanged(auth, async user => {
       setUser(user);
+      if (user) {
+        // Cargar permisos del usuario
+        try {
+          const userPermissions = await getUserPermissions(user.uid);
+          setPermissions(userPermissions);
+        } catch (error) {
+          console.error('Error al cargar permisos:', error);
+          setPermissions([]);
+        }
+      } else {
+        setPermissions([]);
+      }
       setLoading(false);
     });
 
@@ -60,7 +75,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { id_token } = response.params;
       const credential = GoogleAuthProvider.credential(id_token);
       signInWithCredential(auth, credential)
-        .then(() => {
+        .then(async userCredential => {
+          // Crear documento de usuario si no existe
+          await createUserDocument(
+            userCredential.user.uid,
+            userCredential.user.email || '',
+            userCredential.user.displayName || undefined,
+            userCredential.user.photoURL || undefined
+          );
           // La navegación se manejará automáticamente por el onAuthStateChanged
         })
         .catch(error => {
@@ -76,7 +98,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    // Crear documento de usuario con permisos vacíos
+    await createUserDocument(
+      userCredential.user.uid,
+      email,
+      userCredential.user.displayName || undefined,
+      userCredential.user.photoURL || undefined
+    );
   };
 
   const signInWithGoogle = async () => {
@@ -97,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
+    permissions,
     loading,
     signIn,
     signUp,

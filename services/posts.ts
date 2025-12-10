@@ -19,6 +19,7 @@ export interface Post {
   createdAt: Date;
   timestamp: Timestamp;
   eventDate?: Date;
+  provinceId?: number;
 }
 
 export const uploadImage = async (
@@ -46,7 +47,8 @@ export const createPost = async (
   userEmail: string,
   userName?: string,
   userPhotoURL?: string,
-  eventDate?: Date
+  eventDate?: Date,
+  provinceId?: number
 ): Promise<void> => {
   try {
     await addDoc(collection(db, 'posts'), {
@@ -58,6 +60,7 @@ export const createPost = async (
       createdAt: Timestamp.now(),
       timestamp: Timestamp.now(),
       eventDate: eventDate ? Timestamp.fromDate(eventDate) : null,
+      provinceId: provinceId || null,
     });
   } catch (error) {
     console.error('Error al crear post:', error);
@@ -79,6 +82,7 @@ export const subscribeToPosts = (
         createdAt: doc.data().createdAt?.toDate() || new Date(),
         timestamp: doc.data().timestamp,
         eventDate: doc.data().eventDate?.toDate() || undefined,
+        provinceId: doc.data().provinceId || undefined,
       })) as Post[];
 
       callback(posts);

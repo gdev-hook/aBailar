@@ -59,7 +59,12 @@
     "selectImageError": "Please select an image",
     "uploadError": "Error uploading image",
     "selectEventDate": "Select event date",
-    "selectEventDateError": "Please select an event date"
+    "selectEventDateError": "Please select an event date",
+    "selectProvince": "Select province",
+    "selectProvinceError": "Please select a province",
+    "searchProvince": "Search province...",
+    "noUploadPermissions": "You don't have permissions to upload posts",
+    "noProvincePermissions": "You don't have permissions to upload posts in this province"
   },
   "profile": {
     "logout": "Sign Out",

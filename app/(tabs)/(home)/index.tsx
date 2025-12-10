@@ -3,6 +3,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Post, subscribeToPosts } from '@/services/posts';
@@ -19,9 +20,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function FeedScreen() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const { permissions } = useAuth();
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+
+  const canUploadPosts =
+    permissions.includes('admin') || permissions.length > 0;
 
   useEffect(() => {
     const unsubscribe = subscribeToPosts(newPosts => {
@@ -41,7 +46,6 @@ export default function FeedScreen() {
   return (
     <SafeAreaView className="flex-1" edges={['top']}>
       <ThemedView className="flex-1">
-        {/* Feed */}
         <ScrollView
           className="flex-1"
           refreshControl={
@@ -65,24 +69,25 @@ export default function FeedScreen() {
           )}
         </ScrollView>
 
-        {/* Botón flotante */}
-        <TouchableOpacity
-          className="absolute w-14 h-14 rounded-full justify-center items-center shadow-lg"
-          style={{
-            backgroundColor: colors.tint,
-            bottom: '5%',
-            right: '5%',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 4.65,
-            elevation: 8,
-          }}
-          onPress={() => router.push('/(tabs)/(home)/upload')}
-          activeOpacity={0.8}
-        >
-          <IconSymbol name="plus" size={28} color="white" />
-        </TouchableOpacity>
+        {canUploadPosts && (
+          <TouchableOpacity
+            className="absolute w-14 h-14 rounded-full justify-center items-center shadow-lg"
+            style={{
+              backgroundColor: colors.tint,
+              bottom: '5%',
+              right: '5%',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4.65,
+              elevation: 8,
+            }}
+            onPress={() => router.push('/(tabs)/(home)/upload')}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name="plus" size={28} color="white" />
+          </TouchableOpacity>
+        )}
       </ThemedView>
     </SafeAreaView>
   );

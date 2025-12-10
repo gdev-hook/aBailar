@@ -59,7 +59,12 @@
     "selectImageError": "Por favor selecciona una imagen",
     "uploadError": "Error al subir la imagen",
     "selectEventDate": "Seleccionar fecha del evento",
-    "selectEventDateError": "Por favor selecciona una fecha del evento"
+    "selectEventDateError": "Por favor selecciona una fecha del evento",
+    "selectProvince": "Seleccionar provincia",
+    "selectProvinceError": "Por favor selecciona una provincia",
+    "searchProvince": "Buscar provincia...",
+    "noUploadPermissions": "No tienes permisos para subir posts",
+    "noProvincePermissions": "No tienes permisos para subir posts en esta provincia"
   },
   "profile": {
     "logout": "Cerrar Sesión",
