@@ -5,6 +5,7 @@ import { Colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useToast } from '@/hooks/useToast';
 import { Image } from 'expo-image';
 import { Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +15,7 @@ export default function ProfileScreen() {
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { showError } = useToast();
 
   const handleLogout = () => {
     Alert.alert(t('profile.logout'), t('profile.logoutConfirm'), [
@@ -25,7 +27,7 @@ export default function ProfileScreen() {
           try {
             await logout();
           } catch (error: any) {
-            Alert.alert(
+            showError(
               t('profile.logoutError'),
               error.message || t('profile.logoutErrorDefault')
             );

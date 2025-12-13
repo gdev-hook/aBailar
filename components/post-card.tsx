@@ -15,7 +15,7 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { width } = useWindowDimensions();
   const imageSize = width;
   const [imageHeight, setImageHeight] = useState<number | null>(null);
@@ -47,14 +47,11 @@ export function PostCard({ post }: PostCardProps) {
           </ThemedText>
           {post.eventDate && (
             <ThemedText className="text-xs text-gray-500 dark:text-gray-400">
-              {new Date(post.eventDate).toLocaleDateString(
-                t('common.dateFormat'),
-                {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                }
-              )}
+              {new Date(post.eventDate).toLocaleDateString(locale, {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
             </ThemedText>
           )}
         </ThemedView>

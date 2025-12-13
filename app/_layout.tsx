@@ -3,7 +3,7 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from '@react-navigation/native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator } from 'react-native';
@@ -12,9 +12,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
 
 import { ThemedView } from '@/components/themed-view';
+import { Routes } from '@/constants/routes';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { I18nProvider } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Toast from 'react-native-toast-message';
+
+const queryClient = new QueryClient();
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -22,21 +27,18 @@ export const unstable_settings = {
 
 function RootLayoutNav() {
   const { user, loading } = useAuth();
-  const segments = useSegments();
   const router = useRouter();
   const colorScheme = useColorScheme();
 
   useEffect(() => {
-    if (loading) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-
-    if (!user && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
-      router.replace('/(tabs)/(home)');
+    if (!loading) {
+      if (!user) {
+        router.replace(Routes.auth.login);
+      } else {
+        router.replace(Routes.tabs.home.root);
+      }
     }
-  }, [user, loading, segments, router]);
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -59,12 +61,15 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <I18nProvider>
-        <AuthProvider>
-          <RootLayoutNav />
-        </AuthProvider>
-      </I18nProvider>
-    </SafeAreaProvider>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+        <I18nProvider>
+          <AuthProvider>
+            <RootLayoutNav />
+            <Toast />
+          </AuthProvider>
+        </I18nProvider>
+      </SafeAreaProvider>
+    </QueryClientProvider>
   );
 }

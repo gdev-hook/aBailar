@@ -1,3 +1,4 @@
+import { ProvincePicker } from '@/components/province-picker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -6,6 +7,7 @@ import { Colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useToast } from '@/hooks/useToast';
 import { createPost, uploadImage } from '@/services/posts';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
@@ -15,12 +17,9 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -44,10 +43,11 @@ export default function UploadScreen() {
     null
   );
   const [showProvincePicker, setShowProvincePicker] = useState(false);
-  const [provinceSearch, setProvinceSearch] = useState('');
+
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { showSuccess, showError } = useToast();
 
   const getAvailableProvinces = (): Province[] => {
     if (permissions.includes('admin')) {
@@ -63,20 +63,16 @@ export default function UploadScreen() {
 
   const availableProvinces = getAvailableProvinces();
 
-  const filteredProvinces = availableProvinces.filter(province =>
-    province.name.toLowerCase().includes(provinceSearch.toLowerCase())
-  );
-
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert(t('home.permissionsNeeded'), t('home.galleryPermission'));
+      showError(t('home.permissionsNeeded'), t('home.galleryPermission'));
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 0.8,
     });
@@ -90,7 +86,7 @@ export default function UploadScreen() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert(t('home.permissionsNeeded'), t('home.cameraPermission'));
+      showError(t('home.permissionsNeeded'), t('home.cameraPermission'));
       return;
     }
 
@@ -106,17 +102,17 @@ export default function UploadScreen() {
 
   const handleUpload = async () => {
     if (!image || !user) {
-      Alert.alert(t('home.error'), t('home.selectImageError'));
+      showError(t('home.error'), t('home.selectImageError'));
       return;
     }
 
     if (!eventDate) {
-      Alert.alert(t('home.error'), t('home.selectEventDateError'));
+      showError(t('home.error'), t('home.selectEventDateError'));
       return;
     }
 
     if (!selectedProvince) {
-      Alert.alert(t('home.error'), t('home.selectProvinceError'));
+      showError(t('home.error'), t('home.selectProvinceError'));
       return;
     }
 
@@ -125,7 +121,7 @@ export default function UploadScreen() {
         permissions.length === 0 ||
         !permissions.includes(selectedProvince.isoCode)
       ) {
-        Alert.alert(t('home.error'), t('home.noProvincePermissions'));
+        showError(t('home.error'), t('home.noProvincePermissions'));
         return;
       }
     }
@@ -143,16 +139,10 @@ export default function UploadScreen() {
         selectedProvince.id
       );
 
-      Alert.alert(t('home.success'), t('home.uploadSuccess'), [
-        {
-          text: t('home.ok'),
-          onPress: () => {
-            router.back();
-          },
-        },
-      ]);
+      showSuccess(t('home.success'), t('home.uploadSuccess'));
+      router.back();
     } catch (error: any) {
-      Alert.alert(t('home.error'), error.message || t('home.uploadError'));
+      showError(t('home.error'), error.message || t('home.uploadError'));
     } finally {
       setUploading(false);
     }
@@ -322,65 +312,15 @@ export default function UploadScreen() {
         </ThemedView>
       </KeyboardAvoidingView>
 
-      {/* Province Picker Modal */}
-      <Modal
+      <ProvincePicker
         visible={showProvincePicker}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowProvincePicker(false)}
-      >
-        <SafeAreaView className="flex-1">
-          <ThemedView className="flex-1 bg-white dark:bg-black">
-            {/* Header */}
-            <ThemedView className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-              <TouchableOpacity onPress={() => setShowProvincePicker(false)}>
-                <IconSymbol name="xmark" size={24} color={colors.text} />
-              </TouchableOpacity>
-              <ThemedText type="title" className="text-xl font-bold">
-                {t('home.selectProvince')}
-              </ThemedText>
-              <View className="w-6" />
-            </ThemedView>
-
-            {/* Search */}
-            <ThemedView className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-              <TextInput
-                placeholder={t('home.searchProvince')}
-                placeholderTextColor={colors.icon}
-                value={provinceSearch}
-                onChangeText={setProvinceSearch}
-                className="py-2 px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-base"
-                style={{ color: colors.text }}
-              />
-            </ThemedView>
-
-            {/* List */}
-            <FlatList
-              data={filteredProvinces}
-              keyExtractor={item => item.id.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    setSelectedProvince(item);
-                    setShowProvincePicker(false);
-                    setProvinceSearch('');
-                  }}
-                  className="px-4 py-3 border-b border-gray-200 dark:border-gray-800"
-                >
-                  <ThemedText className="text-base">{item.name}</ThemedText>
-                </TouchableOpacity>
-              )}
-              ListEmptyComponent={
-                <ThemedView className="px-4 py-8 items-center">
-                  <ThemedText className="text-gray-500 dark:text-gray-400">
-                    No se encontraron provincias
-                  </ThemedText>
-                </ThemedView>
-              }
-            />
-          </ThemedView>
-        </SafeAreaView>
-      </Modal>
+        onClose={() => setShowProvincePicker(false)}
+        onSelect={province => {
+          setSelectedProvince(province);
+          setShowProvincePicker(false);
+        }}
+        provinces={availableProvinces}
+      />
     </SafeAreaView>
   );
 }

@@ -1,92 +1,88 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { FormInput } from '@/components/ui/form-input';
+import { Routes } from '@/constants/routes';
 import { Colors } from '@/constants/theme';
-import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useEmailSignIn } from '@/hooks/useEmailSignIn';
+import { useGoogleSignIn } from '@/hooks/useGoogleSignIn';
+import { useToast } from '@/hooks/useToast';
+import { LoginFormData, loginSchema } from '@/schemas/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { Platform, TouchableOpacity } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn, loading } = useEmailSignIn();
+  const { signIn: signInGoogle, loading: googleLoading } = useGoogleSignIn();
+
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { showError } = useToast();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert(t('auth.login.error'), t('auth.login.completeFields'));
-      return;
-    }
+  const { control, handleSubmit } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-    setLoading(true);
+  const onSubmit = async (data: LoginFormData) => {
     try {
-      await signIn(email, password);
-      router.replace('/(tabs)');
+      await signIn(data.email, data.password);
+      router.replace(Routes.tabs.root);
     } catch (error: any) {
-      Alert.alert(
+      showError(
         t('auth.login.loginError'),
         error.message || t('auth.login.loginErrorDefault')
       );
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setGoogleLoading(true);
     try {
-      await signInWithGoogle();
-      // La navegación se manejará automáticamente cuando se complete la autenticación
+      await signInGoogle();
     } catch (error: any) {
-      Alert.alert(
+      showError(
         t('auth.login.googleError'),
         error.message || t('auth.login.googleErrorDefault')
       );
-      setGoogleLoading(false);
     }
   };
 
   return (
     <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        contentContainerStyle={{ flexGrow: 1 }}
+        enableOnAndroid={true}
+        extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
       >
         <ThemedView className="flex-1 justify-center p-5">
           <ThemedText type="title" className="mb-10 text-center">
             {t('auth.login.title')}
           </ThemedText>
 
-          <TextInput
-            className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
+          <FormInput
+            control={control}
+            name="email"
             placeholder={t('auth.login.email')}
-            placeholderTextColor={colors.icon}
-            value={email}
-            onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
             autoComplete="email"
           />
 
-          <TextInput
-            className="h-12 border border-gray-300 dark:border-gray-600 rounded-lg px-4 mb-4 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
+          <FormInput
+            control={control}
+            name="password"
             placeholder={t('auth.login.password')}
-            placeholderTextColor={colors.icon}
-            value={password}
-            onChangeText={setPassword}
             secureTextEntry
             autoCapitalize="none"
             autoComplete="password"
@@ -95,7 +91,7 @@ export default function LoginScreen() {
           <TouchableOpacity
             className="h-12 rounded-lg justify-center items-center mt-2"
             style={{ backgroundColor: colors.tint }}
-            onPress={handleLogin}
+            onPress={handleSubmit(onSubmit)}
             disabled={loading || googleLoading}
           >
             <ThemedText className="text-white text-base font-semibold">
@@ -127,12 +123,12 @@ export default function LoginScreen() {
 
           <TouchableOpacity
             className="mt-5 items-center"
-            onPress={() => router.push('/(auth)/register')}
+            onPress={() => router.push(Routes.auth.register)}
           >
             <ThemedText type="link">{t('auth.login.noAccount')}</ThemedText>
           </TouchableOpacity>
         </ThemedView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
