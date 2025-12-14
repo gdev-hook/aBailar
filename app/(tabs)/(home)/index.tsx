@@ -1,4 +1,5 @@
 import { PostCard } from '@/components/post-card';
+import { PostSkeleton } from '@/components/skeletons/post-skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -8,14 +9,25 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { usePosts } from '@/hooks/usePosts';
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FeedScreen() {
-  const { data: posts } = usePosts();
-  const [refreshing, setRefreshing] = useState(false);
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+    isRefetching,
+  } = usePosts();
+
+  const posts = data?.pages.flatMap(page => page.posts) || [];
+
   const { permissions } = useAuth();
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
@@ -24,24 +36,52 @@ export default function FeedScreen() {
   const canUploadPosts = permissions.length > 0;
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    refetch();
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1" edges={['top']}>
+        <ThemedView className="flex-1">
+          <FlashList
+            data={[1, 2, 3]}
+            renderItem={() => <PostSkeleton />}
+            showsVerticalScrollIndicator={false}
+          />
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1" edges={['top']}>
       <ThemedView className="flex-1">
-        <FlatList
+        <FlashList
           data={posts}
           renderItem={({ item }) => <PostCard post={item} />}
           keyExtractor={item => item.id}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={onRefresh}
+              tintColor={colors.tint}
+            />
+          }
+          onEndReached={() => {
+            if (hasNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() =>
+            isFetchingNextPage ? (
+              <ThemedView className="py-4 items-center">
+                <PostSkeleton />
+              </ThemedView>
+            ) : null
           }
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 16 }}
+          contentContainerStyle={{ paddingBottom: 16 }}
           ListEmptyComponent={
             <ThemedView className="flex-1 items-center justify-center py-20 px-4">
               <IconSymbol name="photo" size={64} color={colors.icon} />

@@ -50,6 +50,6 @@ export function useGoogleSignIn() {
 
   return {
     signIn,
-    loading: loading || !request, // Loading if explicitly loading or request not ready
+    loading: loading || !request,
   };
 }

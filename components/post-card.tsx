@@ -18,11 +18,17 @@ export function PostCard({ post }: PostCardProps) {
   const { t, locale } = useTranslation();
   const { width } = useWindowDimensions();
   const imageSize = width;
-  const [imageHeight, setImageHeight] = useState<number | null>(null);
+
+  const calculatedHeight = post.aspectRatio
+    ? imageSize / post.aspectRatio
+    : null;
+
+  const [legacyHeight, setLegacyHeight] = useState<number | null>(null);
+
+  const displayHeight = calculatedHeight ?? legacyHeight ?? imageSize;
 
   return (
     <ThemedView className="mb-4 bg-white dark:bg-black">
-      {/* Header */}
       <ThemedView className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
         {post.userPhotoURL ? (
           <Image
@@ -57,39 +63,28 @@ export function PostCard({ post }: PostCardProps) {
         </ThemedView>
       </ThemedView>
 
-      {/* Image */}
       <Image
         source={{ uri: post.imageUrl }}
         style={{
           width: imageSize,
-          height: imageHeight || imageSize,
+          height: displayHeight,
           alignSelf: 'stretch',
         }}
-        contentFit="contain"
+        contentFit="cover"
         transition={200}
         cachePolicy="memory-disk"
         placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
         onLoad={e => {
+          if (calculatedHeight) return;
+
           const { width: imgWidth, height: imgHeight } = e.source;
           if (imgWidth && imgHeight) {
-            const aspectRatio = imgHeight / imgWidth;
-            const calculatedHeight = imageSize * aspectRatio;
-            setImageHeight(calculatedHeight);
+            const aspectRatio = imgWidth / imgHeight;
+            const newHeight = imageSize / aspectRatio;
+            setLegacyHeight(newHeight);
           }
         }}
       />
-
-      {/* Footer */}
-      {/* <ThemedView className="px-4 py-3">
-        <ThemedText className="text-sm text-gray-500 dark:text-gray-400">
-          {new Date(post.createdAt).toLocaleDateString(t('common.dateFormat'), {
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </ThemedText>
-      </ThemedView> */}
     </ThemedView>
   );
 }

@@ -2,9 +2,11 @@ import { db, storage } from '@/config/firebase';
 import {
   addDoc,
   collection,
-  onSnapshot,
+  getDocs,
+  limit,
   orderBy,
   query,
+  startAfter,
   Timestamp,
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
@@ -12,6 +14,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 export interface Post {
   id: string;
   imageUrl: string;
+  aspectRatio?: number;
   userId: string;
   userEmail: string;
   userName?: string;
@@ -48,7 +51,8 @@ export const createPost = async (
   userName?: string,
   userPhotoURL?: string,
   eventDate?: Date,
-  provinceId?: number
+  provinceId?: number,
+  aspectRatio?: number
 ): Promise<void> => {
   try {
     await addDoc(collection(db, 'posts'), {
@@ -61,6 +65,7 @@ export const createPost = async (
       timestamp: Timestamp.now(),
       eventDate: eventDate ? Timestamp.fromDate(eventDate) : null,
       provinceId: provinceId || null,
+      aspectRatio: aspectRatio || null,
     });
   } catch (error) {
     console.error('Error al crear post:', error);
@@ -68,29 +73,48 @@ export const createPost = async (
   }
 };
 
-export const subscribeToPosts = (
-  callback: (posts: Post[]) => void
-): (() => void) => {
-  const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
+const PAGE_SIZE = 10;
 
-  const unsubscribe = onSnapshot(
-    q,
-    snapshot => {
-      const posts: Post[] = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        timestamp: doc.data().timestamp,
-        eventDate: doc.data().eventDate?.toDate() || undefined,
-        provinceId: doc.data().provinceId || undefined,
-      })) as Post[];
+export interface PostsResponse {
+  posts: Post[];
+  lastVisible: any;
+}
 
-      callback(posts);
-    },
-    error => {
-      console.error('Error al obtener posts:', error);
+export const getPosts = async (
+  lastVisible: any = null
+): Promise<PostsResponse> => {
+  try {
+    let q = query(
+      collection(db, 'posts'),
+      orderBy('timestamp', 'desc'),
+      limit(PAGE_SIZE)
+    );
+
+    if (lastVisible) {
+      q = query(
+        collection(db, 'posts'),
+        orderBy('timestamp', 'desc'),
+        startAfter(lastVisible),
+        limit(PAGE_SIZE)
+      );
     }
-  );
 
-  return unsubscribe;
+    const snapshot = await getDocs(q);
+    const lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
+
+    const posts: Post[] = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate() || new Date(),
+      timestamp: doc.data().timestamp,
+      eventDate: doc.data().eventDate?.toDate() || undefined,
+      provinceId: doc.data().provinceId || undefined,
+      aspectRatio: doc.data().aspectRatio || undefined,
+    })) as Post[];
+
+    return { posts, lastVisible: lastVisibleDoc };
+  } catch (error) {
+    console.error('Error al obtener posts:', error);
+    throw error;
+  }
 };

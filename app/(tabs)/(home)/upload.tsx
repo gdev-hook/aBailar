@@ -7,16 +7,17 @@ import { Colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useToast } from '@/hooks/useToast';
-import { createPost, uploadImage } from '@/services/posts';
+import { useCreatePost } from '@/hooks/useCreatePost';
+import { useImagePicker } from '@/hooks/useImagePicker';
+import { createPostSchema, PostFormData } from '@/schemas/post.schema';
+import { zodResolver } from '@hookform/resolvers/zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -35,19 +36,38 @@ const provinces = provincesData as Province[];
 
 export default function UploadScreen() {
   const { user, permissions } = useAuth();
-  const [image, setImage] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [eventDate, setEventDate] = useState<Date | null>(null);
+  const { image, aspectRatio, showImagePickerOptions } = useImagePicker();
+
+  const { uploading, handleUpload: uploadPost } = useCreatePost();
+
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedProvince, setSelectedProvince] = useState<Province | null>(
-    null
-  );
   const [showProvincePicker, setShowProvincePicker] = useState(false);
 
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { showSuccess, showError } = useToast();
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<PostFormData>({
+    resolver: zodResolver(createPostSchema),
+    mode: 'onChange',
+  });
+
+  const watchedImage = watch('image');
+  const watchedDate = watch('eventDate');
+  const watchedProvince = watch('province');
+
+  // Sync image from hook to form
+  useEffect(() => {
+    if (image) {
+      setValue('image', image, { shouldValidate: true });
+    }
+  }, [image, setValue]);
 
   const getAvailableProvinces = (): Province[] => {
     if (permissions.includes('admin')) {
@@ -63,89 +83,12 @@ export default function UploadScreen() {
 
   const availableProvinces = getAvailableProvinces();
 
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (status !== 'granted') {
-      showError(t('home.permissionsNeeded'), t('home.galleryPermission'));
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      quality: 0.8,
+  const onSubmit = (data: PostFormData) => {
+    uploadPost(data, {
+      user,
+      permissions,
+      aspectRatio,
     });
-
-    if (!result.canceled && result.assets[0]) {
-      setImage(result.assets[0].uri);
-    }
-  };
-
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-
-    if (status !== 'granted') {
-      showError(t('home.permissionsNeeded'), t('home.cameraPermission'));
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setImage(result.assets[0].uri);
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!image || !user) {
-      showError(t('home.error'), t('home.selectImageError'));
-      return;
-    }
-
-    if (!eventDate) {
-      showError(t('home.error'), t('home.selectEventDateError'));
-      return;
-    }
-
-    if (!selectedProvince) {
-      showError(t('home.error'), t('home.selectProvinceError'));
-      return;
-    }
-
-    if (!permissions.includes('admin')) {
-      if (
-        permissions.length === 0 ||
-        !permissions.includes(selectedProvince.isoCode)
-      ) {
-        showError(t('home.error'), t('home.noProvincePermissions'));
-        return;
-      }
-    }
-
-    setUploading(true);
-    try {
-      const imageUrl = await uploadImage(image, user.uid);
-      await createPost(
-        imageUrl,
-        user.uid,
-        user.email || '',
-        user.displayName || undefined,
-        user.photoURL || undefined,
-        eventDate || undefined,
-        selectedProvince.id
-      );
-
-      showSuccess(t('home.success'), t('home.uploadSuccess'));
-      router.back();
-    } catch (error: any) {
-      showError(t('home.error'), error.message || t('home.uploadError'));
-    } finally {
-      setUploading(false);
-    }
   };
 
   const formatDate = (date: Date | null): string => {
@@ -166,16 +109,8 @@ export default function UploadScreen() {
   const onDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (event.type !== 'dismissed' && selectedDate) {
-      setEventDate(selectedDate);
+      setValue('eventDate', selectedDate, { shouldValidate: true });
     }
-  };
-
-  const showImagePickerOptions = () => {
-    Alert.alert(t('home.selectImage'), t('home.chooseOption'), [
-      { text: t('home.cancel'), style: 'cancel' },
-      { text: t('home.takePhoto'), onPress: takePhoto },
-      { text: t('home.chooseFromGallery'), onPress: pickImage },
-    ]);
   };
 
   return (
@@ -185,7 +120,6 @@ export default function UploadScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ThemedView className="flex-1">
-          {/* Header */}
           <ThemedView className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
             <TouchableOpacity onPress={() => router.back()}>
               <IconSymbol name="xmark" size={24} color={colors.text} />
@@ -201,14 +135,36 @@ export default function UploadScreen() {
             contentContainerStyle={{ flexGrow: 1 }}
           >
             <ThemedView className="flex-1 p-4">
-              {image ? (
-                <ThemedView className="flex-1">
+              <ThemedView className="flex-1">
+                {watchedImage ? (
                   <Image
-                    source={{ uri: image }}
+                    source={{ uri: watchedImage }}
                     className="w-full rounded-lg mb-4"
                     style={{ maxHeight: 400 }}
                     contentFit="contain"
                   />
+                ) : (
+                  <TouchableOpacity
+                    onPress={showImagePickerOptions}
+                    className="w-full rounded-lg mb-4 border-2 border-dashed border-gray-300 dark:border-gray-600 items-center justify-center bg-gray-50 dark:bg-gray-900/50"
+                    style={{ height: 200 }}
+                  >
+                    <IconSymbol
+                      name="photo"
+                      size={48}
+                      color={errors.image ? 'red' : colors.icon}
+                    />
+                    <ThemedText
+                      className={`mt-2 font-medium ${errors.image ? 'text-red-500' : 'text-gray-500'}`}
+                    >
+                      {errors.image
+                        ? errors.image.message
+                        : t('home.selectImage')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                )}
+
+                {watchedImage && (
                   <TouchableOpacity
                     onPress={showImagePickerOptions}
                     className="py-3 px-4 rounded-lg mb-4 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
@@ -217,96 +173,96 @@ export default function UploadScreen() {
                       {t('home.changeImage')}
                     </ThemedText>
                   </TouchableOpacity>
+                )}
+
+                <View>
                   <TouchableOpacity
                     onPress={() => setShowDatePicker(true)}
-                    className="py-3 px-4 rounded-lg mb-4 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                    className={`py-3 px-4 rounded-lg mb-1 border ${errors.eventDate ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-800`}
                   >
                     <ThemedText className="text-center font-semibold">
-                      {eventDate
-                        ? formatDate(eventDate)
+                      {watchedDate
+                        ? formatDate(watchedDate)
                         : t('home.selectEventDate')}
                     </ThemedText>
                   </TouchableOpacity>
-                  {availableProvinces.length > 0 ? (
+                  {errors.eventDate && (
+                    <ThemedText className="text-red-500 text-xs mb-3 text-center">
+                      {errors.eventDate.message}
+                    </ThemedText>
+                  )}
+                </View>
+
+                {availableProvinces.length > 0 ? (
+                  <View>
                     <TouchableOpacity
                       onPress={() => setShowProvincePicker(true)}
-                      className="py-3 px-4 rounded-lg mb-4 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                      className={`py-3 px-4 rounded-lg mb-1 border ${errors.province ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-800`}
                     >
                       <ThemedText className="text-center font-semibold">
-                        {selectedProvince
-                          ? selectedProvince.name
+                        {watchedProvince
+                          ? watchedProvince.name
                           : t('home.selectProvince')}
                       </ThemedText>
                     </TouchableOpacity>
-                  ) : (
-                    <ThemedView className="py-3 px-4 rounded-lg mb-4 border border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20">
-                      <ThemedText className="text-center font-semibold text-red-600 dark:text-red-400">
-                        {t('home.noUploadPermissions')}
-                      </ThemedText>
-                    </ThemedView>
-                  )}
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={eventDate || getMinimumDate()}
-                      mode="date"
-                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                      onChange={onDateChange}
-                      minimumDate={getMinimumDate()}
-                    />
-                  )}
-                  {Platform.OS === 'ios' && showDatePicker && (
-                    <View className="flex-row justify-end mt-2">
-                      <TouchableOpacity
-                        onPress={() => setShowDatePicker(false)}
-                        className="px-4 py-2"
-                      >
-                        <ThemedText
-                          className="font-semibold"
-                          style={{ color: colors.tint }}
-                        >
-                          {t('home.ok')}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  <TouchableOpacity
-                    onPress={handleUpload}
-                    disabled={uploading || !eventDate || !selectedProvince}
-                    className={`py-3 px-4 rounded-lg ${
-                      uploading || !eventDate || !selectedProvince
-                        ? 'opacity-60'
-                        : ''
-                    }`}
-                    style={{
-                      backgroundColor:
-                        uploading || !eventDate || !selectedProvince
-                          ? colors.icon
-                          : colors.tint,
-                    }}
-                  >
-                    {uploading ? (
-                      <ActivityIndicator color="white" />
-                    ) : (
-                      <ThemedText className="text-white text-center font-semibold text-base">
-                        {t('home.publish')}
+                    {errors.province && (
+                      <ThemedText className="text-red-500 text-xs mb-3 text-center">
+                        {errors.province.message}
                       </ThemedText>
                     )}
-                  </TouchableOpacity>
-                </ThemedView>
-              ) : (
-                <ThemedView className="flex-1 items-center justify-center">
-                  <TouchableOpacity
-                    onPress={showImagePickerOptions}
-                    className="items-center justify-center w-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
-                    style={{ minHeight: 200, paddingVertical: 40 }}
-                  >
-                    <IconSymbol name="photo" size={64} color={colors.icon} />
-                    <ThemedText className="mt-4 text-center text-gray-500 dark:text-gray-400">
-                      {t('home.touchToSelect')}
+                  </View>
+                ) : (
+                  <ThemedView className="py-3 px-4 rounded-lg mb-4 border border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20">
+                    <ThemedText className="text-center font-semibold text-red-600 dark:text-red-400">
+                      {t('home.noUploadPermissions')}
                     </ThemedText>
-                  </TouchableOpacity>
-                </ThemedView>
-              )}
+                  </ThemedView>
+                )}
+
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={watchedDate || getMinimumDate()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onDateChange}
+                    minimumDate={getMinimumDate()}
+                  />
+                )}
+                {Platform.OS === 'ios' && showDatePicker && (
+                  <View className="flex-row justify-end mt-2">
+                    <TouchableOpacity
+                      onPress={() => setShowDatePicker(false)}
+                      className="px-4 py-2"
+                    >
+                      <ThemedText
+                        className="font-semibold"
+                        style={{ color: colors.tint }}
+                      >
+                        {t('home.ok')}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                <TouchableOpacity
+                  onPress={handleSubmit(onSubmit)}
+                  disabled={uploading || !isValid}
+                  className={`py-3 px-4 rounded-lg ${
+                    uploading || !isValid ? 'opacity-60' : ''
+                  }`}
+                  style={{
+                    backgroundColor:
+                      uploading || !isValid ? colors.icon : colors.tint,
+                  }}
+                >
+                  {uploading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <ThemedText className="text-white text-center font-semibold text-base">
+                      {t('home.publish')}
+                    </ThemedText>
+                  )}
+                </TouchableOpacity>
+              </ThemedView>
             </ThemedView>
           </ScrollView>
         </ThemedView>
@@ -316,7 +272,7 @@ export default function UploadScreen() {
         visible={showProvincePicker}
         onClose={() => setShowProvincePicker(false)}
         onSelect={province => {
-          setSelectedProvince(province);
+          setValue('province', province, { shouldValidate: true });
           setShowProvincePicker(false);
         }}
         provinces={availableProvinces}

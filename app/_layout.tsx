@@ -3,9 +3,9 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from '@react-navigation/native';
-import { Stack, useRouter } from 'expo-router';
+import { Redirect, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { ActivityIndicator } from 'react-native';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -21,24 +21,15 @@ import Toast from 'react-native-toast-message';
 
 const queryClient = new QueryClient();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
-
 function RootLayoutNav() {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const segments = useSegments();
   const colorScheme = useColorScheme();
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.replace(Routes.auth.login);
-      } else {
-        router.replace(Routes.tabs.home.root);
-      }
-    }
-  }, [user, loading, router]);
+  const theme = useMemo(
+    () => (colorScheme === 'dark' ? DarkTheme : DefaultTheme),
+    [colorScheme]
+  );
 
   if (loading) {
     return (
@@ -48,13 +39,14 @@ function RootLayoutNav() {
     );
   }
 
+  const inAuthGroup = segments[0] === '(auth)';
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-      <StatusBar style="auto" />
+    <ThemeProvider value={theme}>
+      {!user && !inAuthGroup && <Redirect href={Routes.auth.login} />}
+      {user && inAuthGroup && <Redirect href={Routes.tabs.home.root} />}
+      <Stack screenOptions={{ headerShown: false }} />
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
   );
 }
